@@ -1,0 +1,59 @@
+Compile:
+Run the script build.sh, it should generate an exacutable named "runme". Run the exacutable. (This requires g++ that supports C++11)
+
+Usage:
+The disk storage is in a directory named "storage" located at the same level of the exacutable.
+To disable in-memory cache, change the "CACHE_SIZE" macro to 0 in main.cpp and compile again.
+(The listening port and the storage directory can also be changed by changing "PORT_NO" and "STORAGE_PATH" macro in main.cpp.)
+(I was planning to add more optional arguments for the program to change these and the macros was originally just a placeholder, but I have a presentation on Thursday and really don't have time for it among other clean-ups. Sorry.)
+
+Now the program is also able to handle multiple requests over the same connection. 
+
+
+
+Old README from lab3 (still applicable so I copied here):
+The program takes one parameter -n, followed by the number of threads in the thread pool. If -n not specified, 1 is used.
+For reporting statistics, the program now also listens to the keyboard input in a separate thread. Enter 's' at any time the server is running will print the number of inserts, number of deletes, number of lookups, and the min, average, max, median request time. Enter 'r' to reset statistics to start a new test. Enter 'q' to stop the server.
+
+Benchmark and performance discussion:
+See performance.pdf.
+
+
+
+
+Old README from lab2 (still applicable so I copied here):
+1) May need to add '-lsocket' to build on solaris.
+
+2) The default port used by the program is 10801, which is defined as a macro 'PORT_NO' in main.cpp. If there is collision please change this value. All incoming HTTP requests must use this port.
+
+3) If the program reports "binding failed", please first see if there is already another instance of the program running and kill it first. Then wait a few seconds before starting a new run.
+
+
+A little more explanation about the thread pool server:
+
+The server has a thread pool as well as a 'main' thread. The 'main' thread listens to the port (10801 by default) for incoming connections. Once a connection is accepted, it passes the connection to another thread in the thread pool, and continues to listen to the port, while the other thread carries on its task. The "passing" is done by a task queue, i.e. the 'main' thread will enqueue new incoming connection tasks to the queue, and threads in the thread pool will always try to dequeue a new task if its current task is done, or enter into wait state if the task queue is empty, in which case they will be woken up by the arrival of a new task in the task queue.
+
+
+Files:
+
+There are 12 source files in total: 
+threadSafeKVStore.hpp, 
+threadSafeKVStore.cpp, 
+threadPoolServer.hpp, 
+threadPoolServer.cpp, 
+threadSafeQueue.hpp, 
+httpProcessingFunc.hpp, 
+httpProcessingFunc.cpp, 
+requestHandler.hpp, 
+requestHandler.cpp,
+fileSystemIO.hpp,
+fileSystemIO.cpp,
+main.cpp.
+
+threadSafeKVStore.hpp and threadSafeKVStore.cpp are for the back-end storage.
+threadPoolServer.hpp and threadPoolServer.cpp are for the thread pool server class.
+threadSafeQueue.hpp is a thread safe queue template for task queue.
+httpProcessingFunc.hpp and httpProcessingFunc.cpp are for parsing HTTP requests.
+requestHandler.hpp and requestHandler.cpp are for handling parsed HTTP requests and building response.
+fileSystemIO.hpp and fileSystemIO.cpp are for disk-IO functions.
+main.cpp is the entry point of the program. It initialize the back-end storage and the thread pool server, and then start the server. 
